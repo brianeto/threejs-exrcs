@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>>>>Cube<<<</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script src="loaders/OBJLoader.js"></script>
+    <script src="loaders/MTLLoader.js"></script>
+		<script>
+      var camera, scene, renderer, light, pointlight;
+      var geometry, material, mesh, loader;
+
+
+      function init() {
+        // camara
+        camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
+        camera.position.y = 1;
+        camera.position.z = 5;
+
+        // escena
+        scene = new THREE.Scene();
+
+        // luces
+        light = new THREE.AmbientLight(0xcccccc, 0.4);
+        scene.add( light );
+        pointlight = new THREE.PointLight(0xffffff, 0.8);
+        camera.add ( pointlight );
+        scene.add ( camera );
+
+        // JSON
+
+        // var loader = new THREE.JSONLoader();
+        // loader.load('models/fullrobot.json', handle_load);
+        //
+        // function handle_load(geometry, material){
+        //   var material = new THREE.MeshNormalMaterial();
+        //   var mesh = new THREE.Mesh(geometry, material);
+        //   scene.add(mesh);
+        //   mesh.position.z = -1;
+        // }
+
+/*
+				var mtlLoader = new THREE.MTLLoader();
+				mtlLoader.load('materials/megane3rs.mtl', function(materials){
+					materials.preload();
+					var objLoader = new THREE.OBJLoader();
+					objLoader.setMaterials(materials);
+
+					objLoader.load('models/megane3rs.obj', function ( obj ) {
+						mesh = obj;
+						// mesh.material.color.setHex(0xff0000);
+					 	scene.add( mesh );
+					});
+
+				});
+
+*/
+        // adición del modelado y el material
+				// var mymaterial = new THREE.MTLLoader();
+				//
+				// mymaterial.load('materials/megane3rs.mtl');
+				//
+        // mesh = new THREE.Mesh( geometry, material );
+        // mymaterial.add( mesh );
+
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+
+        // MESH LOADER
+        // var loader = new THREE.OBJLoader();
+				//
+        // loader.load(
+        //   'models/megane3rs.obj',
+        //   // Cuando el recurso esta cargado
+        //   function ( obj ) {
+        //     mesh = obj;
+        //     scene.add( mesh );
+        //   }
+        // );
+      }
+      // animación
+      function animate() {
+
+        requestAnimationFrame( animate );
+
+        if (mesh != null) {
+          mesh.rotation.y += 0.002;
+        }
+
+        //mesh.rotation.y = -Math.PI/4;
+
+        renderer.render( scene, camera );
+
+      }
+
+      init();
+      animate();
+
+		</script>
+	</body>
+</html>
