@@ -27,7 +27,7 @@
         scene = new THREE.Scene();
 
         // luces
-        light = new THREE.AmbientLight(0xcccccc, 0.4);
+        light = new THREE.AmbientLight(0xcccccc, 0.9);
         scene.add( light );
         pointlight = new THREE.PointLight(0xffffff, 0.8);
         camera.add ( pointlight );
@@ -45,14 +45,14 @@
         //   mesh.position.z = -1;
         // }
 
-/*
+
 				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.load('materials/megane3rs.mtl', function(materials){
+				mtlLoader.load('models/mclaren.mtl', function(materials){
 					materials.preload();
 					var objLoader = new THREE.OBJLoader();
 					objLoader.setMaterials(materials);
 
-					objLoader.load('models/megane3rs.obj', function ( obj ) {
+					objLoader.load('models/mclaren.obj', function ( obj ) {
 						mesh = obj;
 						// mesh.material.color.setHex(0xff0000);
 					 	scene.add( mesh );
@@ -60,7 +60,7 @@
 
 				});
 
-*/
+
         // adición del modelado y el material
 				// var mymaterial = new THREE.MTLLoader();
 				//
@@ -72,18 +72,21 @@
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
+/*
 
         // MESH LOADER
-        // var loader = new THREE.OBJLoader();
-				//
-        // loader.load(
-        //   'models/megane3rs.obj',
-        //   // Cuando el recurso esta cargado
-        //   function ( obj ) {
-        //     mesh = obj;
-        //     scene.add( mesh );
-        //   }
-        // );
+				var material = new THREE.MeshBasicMaterial({color: 0xff0000});
+        var loader = new THREE.OBJLoader(mesh, material);
+
+        loader.load(
+        'models/megane3rs.obj',
+          // Cuando el recurso esta cargado
+          function ( obj ) {
+          mesh = obj;
+          scene.add( mesh );
+          }
+       );
+*/
       }
       // animación
       function animate() {
