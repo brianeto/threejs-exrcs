@@ -12,15 +12,16 @@
 		<script src="js/three.js"></script>
 		<script src="loaders/OBJLoader.js"></script>
     <script src="loaders/MTLLoader.js"></script>
+		<script src="loaders/OrbitControls.js"></script>
 		<script>
       var camera, scene, renderer, light, pointlight;
-      var geometry, material, mesh, loader;
-
+      var geometry, material, mesh, loader, controls;
 
       function init() {
+
         // camara
-        camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.01, 20 );
-        camera.position.y = 1;
+        camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.01, 20 );
+        camera.position.y = 0.5;
         camera.position.z = 5;
 
         // escena
@@ -46,15 +47,30 @@
         // }
 
 
+
 				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.load('models/mclaren.mtl', function(materials){
+				mtlLoader.load('models/basiccar.mtl', function(materials){
 					materials.preload();
 					var objLoader = new THREE.OBJLoader();
 					objLoader.setMaterials(materials);
 
-					objLoader.load('models/mclaren.obj', function ( obj ) {
+					objLoader.load('models/basiccar.obj', function ( obj ) {
 						mesh = obj;
-						// mesh.material.color.setHex(0xff0000);
+						 obj.traverse(function(child){
+							if (child instanceof THREE.Mesh) {
+								// ruedas, aciento, aerol
+								mesh.children[0].material.color.setHex(0x808080);
+								// luces
+								mesh.children[1].material.color.setHex(0xffffff);
+								// barandas
+								mesh.children[2].material.color.setHex(0x808080);
+								// accesorios
+								mesh.children[3].material.color.setHex(0x808080);
+								// chasis
+								mesh.children[4].material.color.setHex(0xff0000);
+							}
+					 	 });
+
 					 	scene.add( mesh );
 					});
 
@@ -87,15 +103,28 @@
           }
        );
 */
-      }
+			controls = new THREE.OrbitControls = function( camera, renderer.domElement ){
+				controls.enableDamping = true;
+				controls.dampingFactor = 0.25;
+				this.minPolarAngle = 0; // radians
+				this.maxPolarAngle = Math.PI; // radians
+			}
+
+			window.onresize = function(){
+				console.log("Window size: "+window.innerWidth+"x"+window.innerHeight+"px");
+				renderer.setSize(window.innerWidth,window.innerHeight);
+				var aspectRatio = window.innerWidth/window.innerHeight;
+				camera.aspect = aspectRatio;
+				camera.updateProjectionMatrix();
+			}
       // animación
       function animate() {
-
         requestAnimationFrame( animate );
+				controls.update();
 
-        if (mesh != null) {
-          mesh.rotation.y += 0.002;
-        }
+        // if (mesh != null) {
+        //   mesh.rotation.y += 0.002;
+        // }
 
         //mesh.rotation.y = -Math.PI/4;
 
