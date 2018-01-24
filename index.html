@@ -19,18 +19,20 @@
 
       function init() {
 
+
         // camara
-        camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.01, 20 );
+        camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 0.01, 20 );
         camera.position.y = 0.5;
         camera.position.z = 5;
+
 
         // escena
         scene = new THREE.Scene();
 
         // luces
-        light = new THREE.AmbientLight(0xcccccc, 0.9);
-        scene.add( light );
-        pointlight = new THREE.PointLight(0xffffff, 0.8);
+				var ambient = new THREE.AmbientLight( 0x404040 );
+		    scene.add( ambient );
+        pointlight = new THREE.PointLight(0xffffff, 0.9);
         camera.add ( pointlight );
         scene.add ( camera );
 
@@ -75,6 +77,20 @@
 					});
 
 				});
+				var Ground_geometry = new THREE.BoxGeometry( 20, -0.8, 10 );
+				var Ground_material = new THREE.MeshPhongMaterial( {
+						color: 0xa0adaf,
+						shininess: 150,
+						specular: 0xffffff,
+						shading: THREE.SmoothShading
+				} );
+
+				var ground = new THREE.Mesh( Ground_geometry, Ground_material );
+				ground.scale.multiplyScalar( 1 );
+				ground.castShadow = false;
+				ground.receiveShadow = true;
+				scene.add( ground );
+
 
 
         // adición del modelado y el material
@@ -103,12 +119,8 @@
           }
        );
 */
-			controls = new THREE.OrbitControls = function( camera, renderer.domElement ){
-				controls.enableDamping = true;
-				controls.dampingFactor = 0.25;
-				this.minPolarAngle = 0; // radians
-				this.maxPolarAngle = Math.PI; // radians
-			}
+      }
+			// create an AudioListener and add it to the camera
 
 			window.onresize = function(){
 				console.log("Window size: "+window.innerWidth+"x"+window.innerHeight+"px");
@@ -116,11 +128,29 @@
 				var aspectRatio = window.innerWidth/window.innerHeight;
 				camera.aspect = aspectRatio;
 				camera.updateProjectionMatrix();
+
 			}
       // animación
       function animate() {
         requestAnimationFrame( animate );
-				controls.update();
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				this.controls.rotateSpeed = 0.02;
+				this.controls.enableZoom = false;
+				this.controls.maxPolarAngle = Math.PI;
+
+				var listener = new THREE.AudioListener();
+				camera.add( listener );
+
+				// create a global audio source
+				var sound = new THREE.Audio( listener );
+
+				// load a sound and set it as the Audio object's buffer
+				var audioLoader = new THREE.AudioLoader();
+				audioLoader.load( 'loaders/lane8.mp3', function( buffer ) {
+					sound.setBuffer( buffer );
+					sound.setVolume( 0.5 );
+					sound.play();
+				});
 
         // if (mesh != null) {
         //   mesh.rotation.y += 0.002;
@@ -129,7 +159,7 @@
         //mesh.rotation.y = -Math.PI/4;
 
         renderer.render( scene, camera );
-
+				controls.update();
       }
 
       init();
