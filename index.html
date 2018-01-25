@@ -4,11 +4,30 @@
 		<meta charset=utf-8>
 		<title>>>>Cube<<<</title>
 		<style>
-			body { margin: 0; }
+			body { margin: 0; padding:0;overflow:hidden;}
 			canvas { width: 100%; height: 100% }
+			.button {
+		    position: absolute;
+		    display: block;
+		    z-index: 99;
+		    left: 45vw;
+		    top: 5vh;
+				width: 160px;
+    	}
+			.mybutton {
+				height: 30px;
+				background: #E6203B;
+				cursor:pointer;
+				position: relative;
+				border-radius:6px;
+			}
 		</style>
 	</head>
 	<body>
+		<div class="button">
+			<input type="submit" class="mybutton" name="mybutton" value="Realistic car">
+			<input type="submit" class="mybutton" name="mybutton" value="Toy car">
+		</div>
 		<script src="js/three.js"></script>
 		<script src="loaders/OBJLoader.js"></script>
     <script src="loaders/MTLLoader.js"></script>
@@ -32,26 +51,38 @@
         // luces
 				var ambient = new THREE.AmbientLight( 0x404040 );
 		    scene.add( ambient );
-        pointlight = new THREE.PointLight(0xffffff, 0.9);
+        pointlight = new THREE.PointLight(0xffffff, 1);
+				pointlight = new THREE.PointLight(0xffffff, 0.64);
         camera.add ( pointlight );
         scene.add ( camera );
 
-        // JSON
+				controls = new THREE.OrbitControls( camera );
+				controls.addEventListener( 'change', renderer );
+				controls.rotateSpeed = 1;
+				controls.enableZoom = false;
 
-        // var loader = new THREE.JSONLoader();
-        // loader.load('models/fullrobot.json', handle_load);
-        //
-        // function handle_load(geometry, material){
-        //   var material = new THREE.MeshNormalMaterial();
-        //   var mesh = new THREE.Mesh(geometry, material);
-        //   scene.add(mesh);
-        //   mesh.position.z = -1;
-        // }
+				controls.minPolarAngle = 0; // radians
+				controls.maxPolarAngle = 1.4; // radians
+
+				var listener = new THREE.AudioListener();
+				camera.add( listener );
+
+				// create a global audio source
+				var sound = new THREE.Audio( listener );
+
+				// load a sound and set it as the Audio object's buffer
+				var audioLoader = new THREE.AudioLoader();
+				audioLoader.load( 'loaders/lane8.mp3', function( buffer ) {
+					sound.setBuffer( buffer );
+					sound.setVolume( 0.5 );
+					sound.play();
+					sound.stop();
+				});
 
 
 
 				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.load('models/basiccar.mtl', function(materials){
+				mtlLoader.load('materials/basiccar.mtl', function(materials){
 					materials.preload();
 					var objLoader = new THREE.OBJLoader();
 					objLoader.setMaterials(materials);
@@ -77,48 +108,37 @@
 					});
 
 				});
-				var Ground_geometry = new THREE.BoxGeometry( 20, -0.8, 10 );
-				var Ground_material = new THREE.MeshPhongMaterial( {
-						color: 0xa0adaf,
-						shininess: 150,
-						specular: 0xffffff,
-						shading: THREE.SmoothShading
-				} );
+				var texture = new THREE.TextureLoader().load('materials/grass.jpg');
+				var geometry = new THREE.PlaneGeometry(20, 20, 32, 32);
+				var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
+				plane = new THREE.Mesh(geometry, material);
+				plane.position.set(0, -.4, 0);
+				plane.rotation.x = THREE.Math.degToRad(90);
+				plane.name = "plane";
+				plane.castshadow = true;
+				plane.receiveShadow = true;
+				scene.add(plane);
 
-				var ground = new THREE.Mesh( Ground_geometry, Ground_material );
-				ground.scale.multiplyScalar( 1 );
-				ground.castShadow = false;
-				ground.receiveShadow = true;
-				scene.add( ground );
-
-
-
-        // adición del modelado y el material
-				// var mymaterial = new THREE.MTLLoader();
+				// var Ground_geometry = new THREE.BoxGeometry( 20, -1, 10 );
+				// var Ground_material = new THREE.MeshPhongMaterial( {
+				// 		color: 0xa0adaf,
+				// 		shininess: 150,
+				// 		specular: 0xffffff,
+				// 		shading: THREE.SmoothShading
+				// } );
 				//
-				// mymaterial.load('materials/megane3rs.mtl');
-				//
-        // mesh = new THREE.Mesh( geometry, material );
-        // mymaterial.add( mesh );
+				// var ground = new THREE.Mesh( Ground_geometry, Ground_material );
+				// ground.scale.multiplyScalar( 1 );
+				// ground.castShadow = false;
+				// ground.receiveShadow = true;
+				// scene.add( ground );
+
+
 
         renderer = new THREE.WebGLRenderer( { antialias: true } );
         renderer.setSize( window.innerWidth, window.innerHeight );
         document.body.appendChild( renderer.domElement );
-/*
 
-        // MESH LOADER
-				var material = new THREE.MeshBasicMaterial({color: 0xff0000});
-        var loader = new THREE.OBJLoader(mesh, material);
-
-        loader.load(
-        'models/megane3rs.obj',
-          // Cuando el recurso esta cargado
-          function ( obj ) {
-          mesh = obj;
-          scene.add( mesh );
-          }
-       );
-*/
       }
 			// create an AudioListener and add it to the camera
 
@@ -130,33 +150,9 @@
 				camera.updateProjectionMatrix();
 
 			}
-      // animación
+      // animation
       function animate() {
         requestAnimationFrame( animate );
-				controls = new THREE.OrbitControls( camera, renderer.domElement );
-				this.controls.rotateSpeed = 0.02;
-				this.controls.enableZoom = false;
-				this.controls.maxPolarAngle = Math.PI;
-
-				var listener = new THREE.AudioListener();
-				camera.add( listener );
-
-				// create a global audio source
-				var sound = new THREE.Audio( listener );
-
-				// load a sound and set it as the Audio object's buffer
-				var audioLoader = new THREE.AudioLoader();
-				audioLoader.load( 'loaders/lane8.mp3', function( buffer ) {
-					sound.setBuffer( buffer );
-					sound.setVolume( 0.5 );
-					sound.play();
-				});
-
-        // if (mesh != null) {
-        //   mesh.rotation.y += 0.002;
-        // }
-
-        //mesh.rotation.y = -Math.PI/4;
 
         renderer.render( scene, camera );
 				controls.update();
