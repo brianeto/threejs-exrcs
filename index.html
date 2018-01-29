@@ -1,166 +1,150 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset=utf-8>
-		<title>>>>Cube<<<</title>
-		<style>
-			body { margin: 0; padding:0;overflow:hidden;}
-			canvas { width: 100%; height: 100% }
-			.button {
-		    position: absolute;
-		    display: block;
-		    z-index: 99;
-		    left: 45vw;
-		    top: 5vh;
-				width: 160px;
-    	}
-			.mybutton {
-				height: 30px;
-				background: #E6203B;
-				cursor:pointer;
-				position: relative;
-				border-radius:6px;
-			}
-		</style>
-	</head>
-	<body>
-		<div class="button">
-			<input type="submit" class="mybutton" name="mybutton" value="Realistic car">
-			<input type="submit" class="mybutton" name="mybutton" value="Toy car">
-		</div>
-		<script src="js/three.js"></script>
-		<script src="loaders/OBJLoader.js"></script>
-    <script src="loaders/MTLLoader.js"></script>
-		<script src="loaders/OrbitControls.js"></script>
-		<script>
-      var camera, scene, renderer, light, pointlight;
-      var geometry, material, mesh, loader, controls;
+<head>
+	<meta charset=utf-8>
+	<title>>>>Cube<<<</title>
+	<style>
+	body { margin: 0; padding:0;overflow:hidden;}
+	canvas { width: 100%; height: 100% }
+	</style>
+</head>
+<body>
+	<script src="js/three.js"></script>
+	<script src="loaders/OBJLoader.js"></script>
+	<script src="loaders/MTLLoader.js"></script>
+	<script src="loaders/OrbitControls.js"></script>
+	<script>
+	var camera, scene, renderer, light, pointlight;
+	var geometry, material, mesh, loader, controls;
 
-      function init() {
+	function init() {
 
 
-        // camara
-        camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 0.01, 20 );
-        camera.position.y = 0.5;
-        camera.position.z = 5;
+		// camera
+		camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 0.01, 20 );
+		camera.position.y = 0.5;
+		camera.position.z = 5;
 
 
-        // escena
-        scene = new THREE.Scene();
+		// Scene
+		scene = new THREE.Scene();
 
-        // luces
-				var ambient = new THREE.AmbientLight( 0x404040 );
-		    scene.add( ambient );
-        pointlight = new THREE.PointLight(0xffffff, 1);
-				pointlight = new THREE.PointLight(0xffffff, 0.64);
-        camera.add ( pointlight );
-        scene.add ( camera );
+		// Lights
+		var ambient = new THREE.AmbientLight( 0x404040 );
+		scene.add( ambient );
+		pointlight = new THREE.PointLight(0xffffff, 1);
+		pointlight = new THREE.PointLight(0xffffff, 0.64);
+		camera.add ( pointlight );
+		scene.add ( camera );
 
-				controls = new THREE.OrbitControls( camera );
-				controls.addEventListener( 'change', renderer );
-				controls.rotateSpeed = 1;
-				controls.enableZoom = false;
+		// Scene controls
+		controls = new THREE.OrbitControls( camera );
+		controls.addEventListener( 'change',  function(){
+			controls.rotateSpeed = 1;
+			controls.enableZoom = false;
 
-				controls.minPolarAngle = 0; // radians
-				controls.maxPolarAngle = 1.4; // radians
+			controls.minPolarAngle = 0; // radians
+			controls.maxPolarAngle = 1.4; // radians
+		});
 
-				var listener = new THREE.AudioListener();
-				camera.add( listener );
+		// Audio listener
+		var listener = new THREE.AudioListener();
+		camera.add( listener );
 
-				// create a global audio source
-				var sound = new THREE.Audio( listener );
+		// Create a global audio source
+		var sound = new THREE.Audio( listener );
 
-				// load a sound and set it as the Audio object's buffer
-				var audioLoader = new THREE.AudioLoader();
-				audioLoader.load( 'loaders/lane8.mp3', function( buffer ) {
-					sound.setBuffer( buffer );
-					sound.setVolume( 0.5 );
-					sound.play();
-					sound.stop();
+		// Load a sound and set it as the Audio object's buffer
+		var audioLoader = new THREE.AudioLoader();
+		audioLoader.load( 'audio/lane8.mp3', function( buffer ) {
+			sound.setBuffer( buffer );
+			sound.setVolume( 0.5 );
+			sound.play();
+		});
+
+		// Toy car model
+		var objLoader = new THREE.OBJLoader();
+		var mtlLoader = new THREE.MTLLoader();
+		// Loading material
+		mtlLoader.load('materials/basiccar.mtl', function(materials){
+			objLoader.setMaterials(materials);
+			materials.preload();
+			// Loading model/mesh
+			objLoader.load('models/basiccar.obj', function ( obj ) {
+				mesh = obj;
+				mesh.visible = false;
+				// Access to each child in mesh array
+				obj.traverse(function(child){
+					if (child instanceof THREE.Mesh) {
+						// ruedas, aciento, aerol
+						mesh.children[0].material.color.setHex(0x808080);
+						// luces
+						mesh.children[1].material.color.setHex(0xffffff);
+						// barandas
+						mesh.children[2].material.color.setHex(0x808080);
+						// accesorios
+						mesh.children[3].material.color.setHex(0x808080);
+						// chasis
+						mesh.children[4].material.color.setHex(0xff0000);
+					}
 				});
+				scene.add( mesh );
+			});
+		});
 
+		// Real car model
+		var objLoaderOther = new THREE.OBJLoader();
+		var mtlLoader = new THREE.MTLLoader();
+		// Loading material
+		mtlLoader.load('materials/realcar.mtl', function(materials){
+			objLoaderOther.setMaterials(materials);
+			materials.preload();
+			// Loading model/mesh
+			objLoaderOther.load('models/realcar.obj', function ( obj ) {
+				mesh = obj;
+				mesh.position.y = -.4;
+				scene.add( obj );
+			});
+		});
 
+		// Floor plane
+		var texture = new THREE.TextureLoader().load('materials/grass.jpg');
+		var geometry = new THREE.PlaneGeometry(20, 20, 32, 32);
+		var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
+		plane = new THREE.Mesh(geometry, material);
+		plane.position.set(0, -.4, 0);
+		plane.rotation.x = THREE.Math.degToRad(90);
+		plane.name = "plane";
+		scene.add(plane);
 
-				var mtlLoader = new THREE.MTLLoader();
-				mtlLoader.load('materials/basiccar.mtl', function(materials){
-					materials.preload();
-					var objLoader = new THREE.OBJLoader();
-					objLoader.setMaterials(materials);
+		// Render DOM
+		renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		document.body.appendChild( renderer.domElement );
 
-					objLoader.load('models/basiccar.obj', function ( obj ) {
-						mesh = obj;
-						 obj.traverse(function(child){
-							if (child instanceof THREE.Mesh) {
-								// ruedas, aciento, aerol
-								mesh.children[0].material.color.setHex(0x808080);
-								// luces
-								mesh.children[1].material.color.setHex(0xffffff);
-								// barandas
-								mesh.children[2].material.color.setHex(0x808080);
-								// accesorios
-								mesh.children[3].material.color.setHex(0x808080);
-								// chasis
-								mesh.children[4].material.color.setHex(0xff0000);
-							}
-					 	 });
+	}
 
-					 	scene.add( mesh );
-					});
+	// Setting window height and width size
+	window.onresize = function(){
+		console.log("Window size: "+window.innerWidth+"x"+window.innerHeight+"px");
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		var aspectRatio = window.innerWidth/window.innerHeight;
+		camera.aspect = aspectRatio;
+		camera.updateProjectionMatrix();
 
-				});
-				var texture = new THREE.TextureLoader().load('materials/grass.jpg');
-				var geometry = new THREE.PlaneGeometry(20, 20, 32, 32);
-				var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
-				plane = new THREE.Mesh(geometry, material);
-				plane.position.set(0, -.4, 0);
-				plane.rotation.x = THREE.Math.degToRad(90);
-				plane.name = "plane";
-				plane.castshadow = true;
-				plane.receiveShadow = true;
-				scene.add(plane);
+	}
 
-				// var Ground_geometry = new THREE.BoxGeometry( 20, -1, 10 );
-				// var Ground_material = new THREE.MeshPhongMaterial( {
-				// 		color: 0xa0adaf,
-				// 		shininess: 150,
-				// 		specular: 0xffffff,
-				// 		shading: THREE.SmoothShading
-				// } );
-				//
-				// var ground = new THREE.Mesh( Ground_geometry, Ground_material );
-				// ground.scale.multiplyScalar( 1 );
-				// ground.castShadow = false;
-				// ground.receiveShadow = true;
-				// scene.add( ground );
+	// animation
+	function animate() {
+		requestAnimationFrame( animate );
+		renderer.render( scene, camera );
+		controls.update();
 
+	}
 
+	init();
+	animate();
 
-        renderer = new THREE.WebGLRenderer( { antialias: true } );
-        renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( renderer.domElement );
-
-      }
-			// create an AudioListener and add it to the camera
-
-			window.onresize = function(){
-				console.log("Window size: "+window.innerWidth+"x"+window.innerHeight+"px");
-				renderer.setSize(window.innerWidth,window.innerHeight);
-				var aspectRatio = window.innerWidth/window.innerHeight;
-				camera.aspect = aspectRatio;
-				camera.updateProjectionMatrix();
-
-			}
-      // animation
-      function animate() {
-        requestAnimationFrame( animate );
-
-        renderer.render( scene, camera );
-				controls.update();
-      }
-
-      init();
-      animate();
-
-		</script>
-	</body>
+	</script>
+</body>
 </html>
