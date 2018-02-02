@@ -2,35 +2,103 @@
 <html>
 <head>
 	<meta charset=utf-8>
-	<title>>>>Cube<<<</title>
-	<style>
+	<title> My Car garage prospect XD </title>
+<style>
 	body { margin: 0; padding:0;overflow:hidden;}
 	canvas { width: 100%; height: 100% }
+	.buttons_wrapper {
+    width: 450px;
+    height: 100px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 5vh;
+    margin: auto;
+    text-align: center;
+	}
+	.buttons_hidden {
+		position: absolute;
+		width: 150px;
+		display: flex;
+		justify-content: space-around;
+		left: 0;
+		right: 0;
+		top: 20vh;
+		margin: auto;
+	}
+	.button {
+		height: 30px;
+		background: #E6203B;
+		cursor:pointer;
+		position: relative;
+		border-radius:6px;
+	}
+	.hidden {
+		display: none;
+	}
+	.round {
+		width: 45px;
+		height: 45px;
+		border-radius: 50%;
+	}
+	.music_buttons {
+		display: inline-block;
+		position: absolute;
+		right: -25vw;
+	}
+	.sound {
+		height: 30px;
+		background: #E6203B;
+		border-radius:6px;
+
+	}
+	#black-chasis { background-color: black; }
+	#red-chasis { background-color: red; }
+	#blue-chasis { background-color: blue; }
 	</style>
 </head>
 <body>
+	<div class="buttons_wrapper">
+		<button class="button" id="toycar">Toy Car</button>
+		<div class="buttons_hidden">
+			<button class="button round hidden" id="black-chasis"></button>
+			<button class="button round hidden" id="red-chasis"></button>
+			<button class="button round hidden" id="blue-chasis"></button>
+		</div>
+		<button class="button" id="mclarencar">Mclaren 540 Coupe</button>
+		<button class="button" id="meganecar">Renault Megane 3 RS</button>
+		<div class="music_buttons">
+			<button class="sound playpause" id="playpause">PAUSE/PLAY</button>
+			<button class="sound stop" id="stop">STOP</button>
+		</div>
+	</div>
 	<script src="js/three.js"></script>
 	<script src="loaders/OBJLoader.js"></script>
 	<script src="loaders/MTLLoader.js"></script>
 	<script src="loaders/OrbitControls.js"></script>
+	<script src="loaders/Tween.js"></script>
 	<script>
-	var camera, scene, renderer, light, pointlight;
-	var geometry, material, mesh, loader, controls;
+
+	let camera, scene, renderer, light, pointlight, controls;
+	let geometry, material, mesh, loader;
 
 	function init() {
+		// Global variable to use in every object/mesh with .load method
+		let mtlLoader = new THREE.MTLLoader();
 
 
-		// camera
-		camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 0.01, 20 );
+		// Camera
+		camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 0.01, 20 );
 		camera.position.y = 0.5;
 		camera.position.z = 5;
 
-
 		// Scene
 		scene = new THREE.Scene();
+		scene.background = new THREE.Color(0xffffff);
+		scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
 
 		// Lights
-		var ambient = new THREE.AmbientLight( 0x404040 );
+		let ambient = new THREE.AmbientLight( 0x404040 );
 		scene.add( ambient );
 		pointlight = new THREE.PointLight(0xffffff, 1);
 		pointlight = new THREE.PointLight(0xffffff, 0.64);
@@ -42,75 +110,150 @@
 		controls.addEventListener( 'change',  function(){
 			controls.rotateSpeed = 1;
 			controls.enableZoom = false;
-
 			controls.minPolarAngle = 0; // radians
 			controls.maxPolarAngle = 1.4; // radians
 		});
 
 		// Audio listener
-		var listener = new THREE.AudioListener();
+		const listener = new THREE.AudioListener();
 		camera.add( listener );
 
 		// Create a global audio source
-		var sound = new THREE.Audio( listener );
+		const sound = new THREE.Audio( listener );
 
 		// Load a sound and set it as the Audio object's buffer
-		var audioLoader = new THREE.AudioLoader();
-		audioLoader.load( 'audio/lane8.mp3', function( buffer ) {
+		const audioLoader = new THREE.AudioLoader();
+		var isPlaying = sound.play();
+		var isPaused = sound.pause();
+		var isStoped = sound.stop();
+		audioLoader.load( 'audio/fencer.mp3', buffer => {
 			sound.setBuffer( buffer );
-			sound.setVolume( 0.5 );
+			sound.setVolume( .2 );
 			sound.play();
+
+			// Sound options
+			document.getElementById("playpause").onclick = () => {
+				if (isPlaying) {
+					sound.pause();
+					isPlaying = false;
+				} else {
+					sound.play();
+					isPlaying = true;
+				}
+			};
+			document.getElementById("stop").onclick = () => {
+				sound.stop();
+			};
+
+
 		});
+		// Hiding toy car color buttons
+		var colorButtons = document.getElementsByClassName("hidden");
+
 
 		// Toy car model
-		var objLoader = new THREE.OBJLoader();
-		var mtlLoader = new THREE.MTLLoader();
+		let objLoaderToyCar = new THREE.OBJLoader();
 		// Loading material
-		mtlLoader.load('materials/basiccar.mtl', function(materials){
-			objLoader.setMaterials(materials);
+		mtlLoader.load('materials/basiccar.mtl', materials => {
+			objLoaderToyCar.setMaterials(materials);
 			materials.preload();
 			// Loading model/mesh
-			objLoader.load('models/basiccar.obj', function ( obj ) {
-				mesh = obj;
-				mesh.visible = false;
+//			this.anim = new TWEEN.Tween(this.param).to({t: 1.0}, 500 ).easing( TWEEN.Easing.Sinusoidal.EaseInOut);
+
+			objLoaderToyCar.load('models/basiccar.obj', obj => {
+				obj.name = "toycar"
 				// Access to each child in mesh array
-				obj.traverse(function(child){
+				obj.traverse(child => {
 					if (child instanceof THREE.Mesh) {
 						// ruedas, aciento, aerol
-						mesh.children[0].material.color.setHex(0x808080);
+						obj.children[0].material.color.setHex(0x000000);
 						// luces
-						mesh.children[1].material.color.setHex(0xffffff);
+						obj.children[1].material.color.setHex(0xffffff);
 						// barandas
-						mesh.children[2].material.color.setHex(0x808080);
+						obj.children[2].material.color.setHex(0x808080);
 						// accesorios
-						mesh.children[3].material.color.setHex(0x808080);
+						obj.children[3].material.color.setHex(0x808080);
 						// chasis
-						mesh.children[4].material.color.setHex(0xff0000);
+						obj.children[4].material.color.setHex(0xff0000);
 					}
 				});
-				scene.add( mesh );
+				// Showing Toy Car object
+				document.getElementById("toycar").onclick = () => {
+					showCar(obj);
+					// For every colorButton in toycar element, style it
+					for (var i = 0; i < colorButtons.length; i++) {
+						colorButtons[i].style.display = 'block';
+					}
+				};
+				document.getElementById("blue-chasis").onclick = () => {
+					obj.children[4].material.color.setHex(0x0000ff);
+
+				};
+				document.getElementById("red-chasis").onclick = () => {
+					obj.children[4].material.color.setHex(0xff0000);
+
+				};
+				document.getElementById("black-chasis").onclick = () => {
+					obj.children[4].material.color.setHex(0x000000);
+				};
+
 			});
 		});
-
-		// Real car model
-		var objLoaderOther = new THREE.OBJLoader();
-		var mtlLoader = new THREE.MTLLoader();
+		// Renault Megane 3 RS car model
+		let objLoaderMeganeCar = new THREE.OBJLoader();
 		// Loading material
-		mtlLoader.load('materials/realcar.mtl', function(materials){
-			objLoaderOther.setMaterials(materials);
+		mtlLoader.load('materials/renaultmegane3rs.mtl', materials => {
+			objLoaderMeganeCar.setMaterials(materials);
 			materials.preload();
 			// Loading model/mesh
-			objLoaderOther.load('models/realcar.obj', function ( obj ) {
-				mesh = obj;
-				mesh.position.y = -.4;
-				scene.add( obj );
+			objLoaderMeganeCar.load('models/renaultmegane3rs.obj', obj => {
+				obj.name = "megane"
+				obj.position.y = -.3;
+				document.getElementById("meganecar").onclick = () => {
+					for (var i = 0; i < colorButtons.length; i++) {
+						colorButtons[i].style.display = 'none';
+					}
+					showCar(obj)
+				};
 			});
 		});
 
+		// Mclaren 540 Coupe car model
+		let objLoaderMclarenCar = new THREE.OBJLoader();
+		// Loading material
+		mtlLoader.load('materials/mclaren540c.mtl', materials => {
+			objLoaderMclarenCar.setMaterials(materials);
+			materials.preload();
+			// Loading model/mesh
+			objLoaderMclarenCar.load('models/mclaren540c.obj', obj => {
+				obj.name = "mclaren"
+				obj.position.y = -.4;
+				document.getElementById("mclarencar").onclick = () => {
+					for (var i = 0; i < colorButtons.length; i++) {
+						colorButtons[i].style.display = 'none';
+					}
+					showCar(obj)
+				};
+			});
+		});
+		// Define a variable to store the next removable object
+		let removableObject = {}
+		// For every children in the scene
+		function showCar(obj) {
+			scene.add( obj );
+			for (var i = 0; i < scene.children.length; i++) {
+				// if children match the obj name, remove mesh
+				scene.children[i].name === obj.name ?
+				removableObject = obj :
+				scene.remove( removableObject );
+				scene.add( obj );
+			}
+		}
+
 		// Floor plane
-		var texture = new THREE.TextureLoader().load('materials/grass.jpg');
-		var geometry = new THREE.PlaneGeometry(20, 20, 32, 32);
-		var material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
+		const texture = new THREE.TextureLoader().load('materials/grass.jpg');
+		const geometry = new THREE.PlaneGeometry(10, 10, 22, 22);
+		const material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
 		plane = new THREE.Mesh(geometry, material);
 		plane.position.set(0, -.4, 0);
 		plane.rotation.x = THREE.Math.degToRad(90);
@@ -125,21 +268,20 @@
 	}
 
 	// Setting window height and width size
-	window.onresize = function(){
+	window.onresize = () => {
 		console.log("Window size: "+window.innerWidth+"x"+window.innerHeight+"px");
 		renderer.setSize(window.innerWidth,window.innerHeight);
-		var aspectRatio = window.innerWidth/window.innerHeight;
+		let aspectRatio = window.innerWidth/window.innerHeight;
 		camera.aspect = aspectRatio;
 		camera.updateProjectionMatrix();
-
 	}
 
 	// animation
-	function animate() {
+	function animate( obj ) {
 		requestAnimationFrame( animate );
 		renderer.render( scene, camera );
 		controls.update();
-
+		TWEEN.update( obj );
 	}
 
 	init();
