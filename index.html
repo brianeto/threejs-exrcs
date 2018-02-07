@@ -4,10 +4,25 @@
 	<meta charset=utf-8>
 	<title> My Car garage prospect XD </title>
 <style>
+	* {
+		transition: all 0.4s ease-in-out;
+		font-family: "Roboto";
+	}
 	body { margin: 0; padding:0;overflow:hidden;}
+	body::after {
+    content: "";
+    width: 99vw;
+    height: 98vh;
+    border: 2px solid #afafaf73;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 5px;
+    pointer-events: none;
+	}
 	canvas { width: 100%; height: 100% }
 	.buttons_wrapper {
-    width: 450px;
+    width: 600px;
     height: 100px;
     position: absolute;
     left: 0;
@@ -15,6 +30,16 @@
     top: 5vh;
     margin: auto;
     text-align: center;
+	}
+	#title {
+		position: fixed;
+    top: 50vh;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    text-align: center;
+    color: white;
 	}
 	.buttons_hidden {
 		position: absolute;
@@ -27,11 +52,19 @@
 		margin: auto;
 	}
 	.button {
-		height: 30px;
-		background: #E6203B;
-		cursor:pointer;
-		position: relative;
-		border-radius:6px;
+		height: 40px;
+    background: #444343e8;
+    cursor: pointer;
+    position: relative;
+    border-radius: 20px;
+    padding: 0 30px;
+    color: white;
+    font-weight: 500;
+    font-size: 16px;
+    box-shadow: 0 0 20px #ffffff52;
+	}
+	.button:hover, .button:active, .button:focus {
+		box-shadow: 0 0 30px #ffffff7d;
 	}
 	.hidden {
 		display: none;
@@ -40,17 +73,31 @@
 		width: 45px;
 		height: 45px;
 		border-radius: 50%;
+		padding: 0;
+		border: none;
+    opacity: .7;
 	}
 	.music_buttons {
-		display: inline-block;
-		position: absolute;
-		right: -25vw;
+		display: flex;
+		justify-content: space-around;
+		position: fixed;
+		right: 1vw;
+		bottom: 0;
+		overflow: visible;
+		height: 60px;
+		line-height: 60px;
+		width: 200px;
 	}
 	.sound {
-		height: 30px;
-		background: #E6203B;
-		border-radius:6px;
-
+    height: 30px;
+    background: white;
+    border-radius: 20px;
+    padding: 0 20px;
+    cursor: pointer;
+    border: 1px solid #444343;
+	}
+	.sound:hover, .sound:active, .sound:focus {
+		box-shadow: 0 0 20px #44434345;
 	}
 	#black-chasis { background-color: black; }
 	#red-chasis { background-color: red; }
@@ -58,6 +105,7 @@
 	</style>
 </head>
 <body>
+	<h1 id="title">Para empezar haz clic en un carro</h1>
 	<div class="buttons_wrapper">
 		<button class="button" id="toycar">Toy Car</button>
 		<div class="buttons_hidden">
@@ -97,11 +145,22 @@
 		scene.background = new THREE.Color(0xffffff);
 		scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
 
+		var loader = new THREE.TextureLoader();
+		 loader.load( 'textures/grass.jpg', function ( texture ) {
+
+			 var geometry = new THREE.SphereGeometry( 180, 32, 32 );
+
+			 var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } );
+			 var mesh = new THREE.Mesh( geometry, material );
+			 group.add( mesh );
+
+	 } );
+
 		// Lights
 		let ambient = new THREE.AmbientLight( 0x404040 );
 		scene.add( ambient );
-		pointlight = new THREE.PointLight(0xffffff, 1);
-		pointlight = new THREE.PointLight(0xffffff, 0.64);
+		pointlight = new THREE.PointLight(0xffffff, 1, Infinity);
+		pointlight = new THREE.PointLight(0xffffff, 0.64, Infinity);
 		camera.add ( pointlight );
 		scene.add ( camera );
 
@@ -240,6 +299,7 @@
 		let removableObject = {}
 		// For every children in the scene
 		function showCar(obj) {
+			document.getElementById('title').style.display = 'none';
 			scene.add( obj );
 			for (var i = 0; i < scene.children.length; i++) {
 				// if children match the obj name, remove mesh
@@ -251,7 +311,7 @@
 		}
 
 		// Floor plane
-		const texture = new THREE.TextureLoader().load('materials/grass.jpg');
+		const texture = new THREE.TextureLoader().load('materials/floor.jpg');
 		const geometry = new THREE.PlaneGeometry(10, 10, 22, 22);
 		const material = new THREE.MeshPhongMaterial({ map: texture, side: THREE.DoubleSide });
 		plane = new THREE.Mesh(geometry, material);
